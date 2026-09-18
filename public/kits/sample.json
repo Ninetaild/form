@@ -85,6 +85,10 @@
             "동의하지 않습니다"
           ],
           "checked": true
+        },
+        {
+          "type": "action",
+          "text": "제출"
         }
       ]
     }
