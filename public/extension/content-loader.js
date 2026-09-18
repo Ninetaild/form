@@ -1,1 +1,0 @@
-// Placeholder: Chrome content scripts are declared below by a future manifest revision.
