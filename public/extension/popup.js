@@ -1,0 +1,4 @@
+const $=id=>document.getElementById(id);
+async function getPayload(){const r=await chrome.storage.session.get('payload');return r.payload;}
+$('load').onclick=async()=>{const p=await getPayload();if(!p)return $('state').textContent='먼저 Kit 페이지에서 이름/연락처를 입력하세요.';const [tab]=await chrome.tabs.query({active:true,currentWindow:true});await chrome.tabs.sendMessage(tab.id,{cmd:'start',payload:p});window.close();};
+$('analyze').onclick=async()=>{const [tab]=await chrome.tabs.query({active:true,currentWindow:true});const r=await chrome.tabs.sendMessage(tab.id,{cmd:'analyze'});$('state').textContent=r?.summary||'분석 결과를 받지 못했습니다.';};
