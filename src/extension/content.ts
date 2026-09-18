@@ -1,3 +1,4 @@
+window.postMessage({source:'form-routine-kit-extension',type:'ready'},'*');
 const norm=(s:string)=>String(s??'').replace(/\\s+/g,' ').trim().toLowerCase();
 const cleanQ=(s:string)=>String(s??'').replace(/\\s+/g,' ').replace(/^\\s*답변\\s*필수\\s*/i,'').replace(/^\\s*\\d+\\s*[.)、:\\-]?\\s*/,'').trim();
 const qNum=(s:string)=>{const m=String(s??'').match(/(?:답변\\s*필수\\s*)?(\\d+)\\s*[.)、:\\-]?/i);return m?Number(m[1]):null};
