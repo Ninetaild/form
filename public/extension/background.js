@@ -1,1 +1,0 @@
-chrome.tabs.onUpdated.addListener(async(tabId,info)=>{if(info.status!=='complete')return;const {payload}=await chrome.storage.session.get('payload');if(!payload)return;try{await chrome.tabs.sendMessage(tabId,{cmd:'continue',payload});}catch{}});
