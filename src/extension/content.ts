@@ -1,4 +1,5 @@
 const norm=(s:string)=>(s||'').replace(/\s+/g,' ').trim().toLowerCase();
+const cleanQ=(s:string)=>String(s||'').replace(/^\s*\d+\s*[.)、]\s*/,'').trim();
 const vis=(e:Element)=>{const x=e as HTMLElement,r=x.getBoundingClientRect(),c=getComputedStyle(x);return r.width>0&&r.height>0&&c.display!=='none'&&c.visibility!=='hidden'};
 const cs=()=>[...document.querySelectorAll('[role="group"],fieldset,.nsv_survey_item,.nsv_survey_item_inner,form')].filter(vis);
 const textOf=(x:Element)=>((x.textContent||(x as HTMLInputElement).value||'').replace(/\s+/g,' ').trim());
@@ -6,13 +7,13 @@ function analyze(){
  const questions=cs().filter(c=>c.querySelector('input,textarea,select,[contenteditable="true"]')).map((c,index)=>{
    const h=c.querySelector('[role="heading"],.nsv_survey_reply_question_title,legend,[class*="question"],[class*="title"]');
    const choices=[...c.querySelectorAll('label,[role="option"],[role="radio"],[role="checkbox"],option')].filter(vis).map(textOf).filter(Boolean);
-   const inputs=[...c.querySelectorAll('textarea,input:not([type="radio"]):not([type="checkbox"]),select,[contenteditable="true"]')].filter(vis).map(x=>({tag:x.tagName.toLowerCase(),type:(x as HTMLInputElement).type||'',placeholder:(x as HTMLInputElement).placeholder||''}));
-   return{index,question:textOf(h||c),inputs,choices:[...new Set(choices)].slice(0,50)}
+   const inputs=[...c.querySelectorAll('textarea,input:not([type="radio"]):not([type="checkbox"]),select,[contenteditable="true"]')].filter(vis).map(x=>({tag:x.tagName.toLowerCase(),type:(x as HTMLInputElement).type||'',placeholder:(x as HTMLInputElement).placeholder||'',value:(x as HTMLInputElement).value||''}));
+   return{index,question:cleanQ(textOf(h||c)),inputs,choices:[...new Set(choices)].slice(0,50)}
  });
  const buttons=[...document.querySelectorAll('button,[role="button"],input[type="submit"],input[type="button"],a')].filter(vis).map(x=>({text:textOf(x),type:(x as HTMLInputElement).type||'',tag:x.tagName.toLowerCase()})).filter(x=>x.text);
  return{url:location.href,title:document.title,questions,buttons:[...new Map(buttons.map(x=>[x.text,x])).values()].slice(0,50)}
 }
-function find(q:string){const n=norm(q);return cs().filter(c=>norm(c.textContent||'').includes(n)).sort((a,b)=>(a.textContent||'').length-(b.textContent||'').length)[0]||null}
+function find(q:string){const n=norm(cleanQ(q));return cs().filter(c=>norm(cleanQ(c.textContent||'')).includes(n)).sort((a,b)=>(a.textContent||'').length-(b.textContent||'').length)[0]||null}
 function val(e:HTMLInputElement|HTMLTextAreaElement,v:string){const p=e instanceof HTMLTextAreaElement?HTMLTextAreaElement.prototype:HTMLInputElement.prototype;const set=Object.getOwnPropertyDescriptor(p,'value')?.set;set?set.call(e,v):e.value=v;e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}))}
 function choose(root:Element,a:string,checked=true){
  const n=norm(a);
