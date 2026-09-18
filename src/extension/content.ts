@@ -1,18 +1,114 @@
-const norm=(s:string)=>(s||'').replace(/\s+/g,' ').trim().toLowerCase();
-const cleanQ=(s:string)=>String(s||'').replace(/\s+/g,' ').replace(/^\s*답변\s*필수\s*/i,'').replace(/^\s*\d+\s*[.)、:\-]?\s*/,'').trim();
-const qNum=(s:string)=>{const m=String(s||'').match(/(?:답변\s*필수\s*)?(\d+)\s*[.)、:\-]?/i);return m?Number(m[1]):null};
+const norm=(s:string)=>String(s??'').replace(/\\s+/g,' ').trim().toLowerCase();
+const cleanQ=(s:string)=>String(s??'').replace(/\\s+/g,' ').replace(/^\\s*답변\\s*필수\\s*/i,'').replace(/^\\s*\\d+\\s*[.)、:\\-]?\\s*/,'').trim();
+const qNum=(s:string)=>{const m=String(s??'').match(/(?:답변\\s*필수\\s*)?(\\d+)\\s*[.)、:\\-]?/i);return m?Number(m[1]):null};
 const vis=(e:Element)=>{const x=e as HTMLElement,r=x.getBoundingClientRect(),c=getComputedStyle(x);return r.width>0&&r.height>0&&c.display!=='none'&&c.visibility!=='hidden'};
-const textOf=(x:Element)=>((x.textContent||(x as HTMLInputElement).value||'').replace(/\s+/g,' ').trim());
-const groups=()=>[...document.querySelectorAll('.nsv_survey_item.nsv_survey_question,[role="group"][class*="nsv_survey_question"],fieldset,[role="group"]')].filter(vis).filter(c=>c.querySelector('input,textarea,select,[contenteditable="true"]'));
-function analyze(){const questions=groups().map((c,index)=>{const h=c.querySelector('.nsv_survey_reply_question_title,[role="heading"],legend,[class*="question_title"]');const qtext=textOf(h||c),choices=[...c.querySelectorAll('label,.nsv_survey_question_label_multiple_choice_text,[role="option"],[role="radio"],[role="checkbox"],option')].filter(vis).map(textOf).filter(Boolean);const inputs=[...c.querySelectorAll('textarea,input,select,[contenteditable="true"]')].filter(vis).map(x=>({tag:x.tagName.toLowerCase(),type:(x as HTMLInputElement).type||'',name:(x as HTMLInputElement).name||'',id:(x as HTMLElement).id||'',placeholder:(x as HTMLInputElement).placeholder||'',value:(x as HTMLInputElement).value||'',checked:(x as HTMLInputElement).checked===true}));return{index,number:qNum(qtext),question:cleanQ(qtext),rawQuestion:qtext,inputs,choices:[...new Set(choices)].slice(0,50)}});const buttons=[...document.querySelectorAll('button,[role="button"],input[type="submit"],input[type="button"]')].filter(vis).map(x=>({text:textOf(x),type:(x as HTMLInputElement).type||'',tag:x.tagName.toLowerCase(),id:(x as HTMLElement).id||''})).filter(x=>x.text);return{url:location.href,title:document.title,questions,buttons:[...new Map(buttons.map(x=>[x.id||x.text,x])).values()].slice(0,50)}}
-function find(q:string){const wanted=cleanQ(q),n=norm(wanted),num=qNum(q),gs=groups();if(num!=null){const hit=gs.find(c=>{const h=c.querySelector('.nsv_survey_reply_question_title,[role="heading"],legend');return qNum(textOf(h||c))===num});if(hit)return hit}return gs.filter(c=>{const h=c.querySelector('.nsv_survey_reply_question_title,[role="heading"],legend,[class*="question_title"]');const t=norm(cleanQ(textOf(h||c)));return t===n||t.includes(n)||n.includes(t)}).sort((a,b)=>textOf(a).length-textOf(b).length)[0]||null}
-function val(e:HTMLInputElement|HTMLTextAreaElement,v:string){const p=e instanceof HTMLTextAreaElement?HTMLTextAreaElement.prototype:HTMLInputElement.prototype;const set=Object.getOwnPropertyDescriptor(p,'value')?.set;if(set)set.call(e,v);else e.value=v;e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}))}
-function choose(root:Element,a:string,checked=true){const n=norm(a),els=[...root.querySelectorAll('input[type="radio"],input[type="checkbox"],label,[role="option"],option')],el=els.find(x=>norm(textOf(x))===n)||els.find(x=>norm(textOf(x)).includes(n));if(!el)return false;const input=el.matches('input')?el as HTMLInputElement:el.querySelector('input') as HTMLInputElement|null;if(input){if(input.checked!==checked)input.click();return true}if(el instanceof HTMLOptionElement){el.selected=checked;el.parentElement?.dispatchEvent(new Event('change',{bubbles:true}));return true}(el as HTMLElement).click();return true}
+const textOf=(x:Element)=>String(x.textContent||((x as HTMLInputElement).value)||'').replace(/\\s+/g,' ').trim();
+
+function groups(){
+  const candidates=[...document.querySelectorAll('.nsv_survey_item.nsv_survey_question,[role="group"][class*="nsv_survey_question"],fieldset,[role="group"]')];
+  const fallback=[...document.querySelectorAll('form')].flatMap(f=>[...f.querySelectorAll('label,input,textarea,select,[contenteditable="true"]')].map(x=>x.closest('fieldset,[role="group"],.question,.form-group,.form-item,.field') as Element).filter(Boolean));
+  return [...new Set([...candidates,...fallback])].filter(vis).filter(c=>c.querySelector('input,textarea,select,[contenteditable="true"]'));
+}
+
+function locator(e:Element){
+  const id=(e as HTMLElement).id;if(id)return '#'+CSS.escape(id);
+  const name=(e as HTMLInputElement).name;if(name)return e.tagName.toLowerCase()+'[name="'+CSS.escape(name)+'"]';
+  return '';
+}
+
+function analyze(){
+  const questions=groups().map((c,index)=>{
+    const h=c.querySelector('.nsv_survey_reply_question_title,[role="heading"],legend,[class*="question_title"],label');
+    const qtext=textOf(h||c);
+    const choices=[...c.querySelectorAll('label,.nsv_survey_question_label_multiple_choice_text,[role="option"],[role="radio"],[role="checkbox"],option')].filter(vis).map(textOf).filter(Boolean);
+    const inputs=[...c.querySelectorAll('textarea,input,select,[contenteditable="true"]')].filter(vis).map(x=>({tag:x.tagName.toLowerCase(),type:(x as HTMLInputElement).type||'',name:(x as HTMLInputElement).name||'',id:(x as HTMLElement).id||'',placeholder:(x as HTMLInputElement).placeholder||'',value:(x as HTMLInputElement).value||'',checked:(x as HTMLInputElement).checked===true,selector:locator(x)}));
+    return{index,number:qNum(qtext),question:cleanQ(qtext),rawQuestion:qtext,selector:locator(c),inputs,choices:[...new Set(choices)].slice(0,50)};
+  });
+  const buttons=[...document.querySelectorAll('button,[role="button"],input[type="submit"],input[type="button"]')].filter(vis).map(x=>({text:textOf(x),type:(x as HTMLInputElement).type||'',tag:x.tagName.toLowerCase(),id:(x as HTMLElement).id||'',selector:locator(x)})).filter(x=>x.text);
+  return{url:location.href,title:document.title,questions,buttons:[...new Map(buttons.map(x=>[x.id||x.text,x])).values()].slice(0,50)};
+}
+
+function find(q:string,selector?:string){
+  if(selector){try{const e=document.querySelector(selector);if(e&&vis(e))return e}catch{}}
+  const wanted=cleanQ(q),n=norm(wanted),num=qNum(q),gs=groups();
+  if(num!=null){const hit=gs.find(c=>{const h=c.querySelector('.nsv_survey_reply_question_title,[role="heading"],legend,[class*="question_title"]');return qNum(textOf(h||c))===num});if(hit)return hit}
+  return gs.filter(c=>{const h=c.querySelector('.nsv_survey_reply_question_title,[role="heading"],legend,[class*="question_title"],label');const t=norm(cleanQ(textOf(h||c)));return t===n||t.includes(n)||n.includes(t)}).sort((a,b)=>textOf(a).length-textOf(b).length)[0]||null;
+}
+
+function val(e:HTMLInputElement|HTMLTextAreaElement,v:string){
+  const proto=e instanceof HTMLTextAreaElement?HTMLTextAreaElement.prototype:HTMLInputElement.prototype;
+  const set=Object.getOwnPropertyDescriptor(proto,'value')?.set;if(set)set.call(e,v);else e.value=v;
+  e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}));
+}
+
+function choose(root:Element,a:string,checked=true){
+  const n=norm(a);
+  const els=[...root.querySelectorAll('input[type="radio"],input[type="checkbox"],label,[role="option"],[role="radio"],[role="checkbox"],option')];
+  const el=els.find(x=>norm(textOf(x))===n)||els.find(x=>norm(textOf(x)).includes(n));
+  if(!el)return false;
+  const input=el.matches('input')?el as HTMLInputElement:el.querySelector('input') as HTMLInputElement|null;
+  if(input){if(input.checked!==checked)input.click();return true}
+  if(el instanceof HTMLOptionElement){el.selected=checked;el.parentElement?.dispatchEvent(new Event('change',{bubbles:true}));return true}
+  (el as HTMLElement).click();return true;
+}
+
 const tpl=(v:any,p:any)=>String(v??'').replaceAll('{{name}}',p?.name||'').replaceAll('{{num}}',p?.num||'').replaceAll('{{phone}}',p?.num||'');
 const matches=(template:string)=>{try{const t=new URL(tpl(template,{name:'',num:''}),location.href),here=new URL(location.href);return t.origin===here.origin&&t.pathname===here.pathname}catch{return false}};
-function clickButton(label:string){const n=norm(label),els=[...document.querySelectorAll('button,[role="button"],input[type="submit"],input[type="button"]')].filter(vis),el=els.find(x=>norm(textOf(x))===n)||els.find(x=>norm(textOf(x)).includes(n));if(!el)return false;(el as HTMLElement).click();return true}
-async function runForm(form:any,p:any,onAdvance?:()=>Promise<void>){for(const s of form.steps||[]){if(s.type==='action'){const target=tpl(s.text||s.answer,p);if(!target)return{ok:false,message:'실행할 버튼 이름이 없습니다.'};if(onAdvance)await onAdvance();const ok=clickButton(target);if(!ok)return{ok:false,message:'버튼을 찾지 못했습니다: '+target};if(s.nextUrl)setTimeout(()=>location.href=tpl(s.nextUrl,p),150);return{ok:true,message:'다음/제출 동작을 실행했습니다.',advanced:true}}const r=find(s.question||'');if(!r)return{ok:false,message:'문항을 찾지 못했습니다: '+s.question};const raw=s.answer,values=Array.isArray(raw)?raw.map((v:any)=>tpl(v,p)):tpl(raw,p),a=Array.isArray(values)?values[0]||'':values;if(['choice','checkbox','agreement'].includes(s.type)){for(const v of(Array.isArray(values)?values:[a]))if(!choose(r,v,s.checked!==false))return{ok:false,message:'선택하지 못했습니다: '+s.question}}else{const e=r.querySelector('textarea,input:not([type="radio"]):not([type="checkbox"]):not([type="hidden"]),select,[contenteditable="true"]') as HTMLInputElement|HTMLTextAreaElement|null;if(!e)return{ok:false,message:'입력란을 찾지 못했습니다: '+s.question};if(e.tagName==='SELECT'){const o=[...(e as HTMLSelectElement).options].find(o=>norm(o.text)===norm(a)||norm(o.value)===norm(a));if(!o)return{ok:false,message:'선택지를 찾지 못했습니다: '+s.question};(e as HTMLSelectElement).value=o.value;e.dispatchEvent(new Event('change',{bubbles:true}))}else val(e,a)}}return{ok:true,message:'입력 완료',advanced:false}}
-async function executePending(p:any){const i=Math.max(0,p?.cursor||0),forms=p?.kit?.forms||[],form=forms[i];if(!form||!matches(form.url))return;const next={...p,cursor:i+1},result=await runForm(form,p,async()=>{await chrome.storage.session.set({pendingRun:next});if(!result.advanced)await chrome.storage.session.remove('pendingRun');window.postMessage({source:'form-routine-kit-extension',type:'status',message:result.message},'*')}
-chrome.runtime.onMessage.addListener((m,_s,send)=>{if(m.cmd==='analyze'){send(analyze());return}if(m.cmd==='run'){runForm(m.payload.form||m.payload,m.payload).then(send);return true}if(m.cmd==='get-analysis'){chrome.storage.session.get('lastAnalysis').then(x=>send(x.lastAnalysis||null));return true}});
-window.addEventListener('message',e=>{if(e.source!==window||e.data?.source!=='form-routine-kit-web')return;if(e.data.type==='prepare')chrome.storage.session.set({pendingRun:{...e.data.payload,cursor:0}}).then(()=>window.postMessage({source:'form-routine-kit-extension',type:'prepared'},'*'));if(e.data.type==='analyze-current-tab')chrome.runtime.sendMessage({cmd:'web-analyze'}).catch(()=>{});if(e.data.type==='get-analysis')chrome.runtime.sendMessage({cmd:'get-analysis'}).then(a=>window.postMessage({source:'form-routine-kit-extension',type:'analysis',analysis:a},'*')).catch(()=>{})});
-const retry=async()=>{for(let i=0;i<20;i++){const x=await chrome.storage.session.get('pendingRun');if(x.pendingRun){await executePending(x.pendingRun);const y=await chrome.storage.session.get('pendingRun');if(!y.pendingRun)return}await new Promise(r=>setTimeout(r,500))}};retry().catch(()=>{});
+
+function clickButton(label:string,selector?:string){
+  if(selector){try{const e=document.querySelector(selector);if(e&&vis(e)){(e as HTMLElement).click();return true}}catch{}}
+  const n=norm(label),els=[...document.querySelectorAll('button,[role="button"],input[type="submit"],input[type="button"]')].filter(vis);
+  const el=els.find(x=>norm(textOf(x))===n)||els.find(x=>norm(textOf(x)).includes(n));
+  if(!el)return false;(el as HTMLElement).click();return true;
+}
+
+async function runForm(form:any,p:any,onAdvance?:()=>Promise<void>){
+  for(const s of form.steps||[]){
+    if(s.type==='action'){
+      const target=tpl(s.text||s.answer,p);if(!target)return{ok:false,message:'실행할 버튼 이름이 없습니다.'};
+      if(onAdvance)await onAdvance();
+      const ok=clickButton(target,s.selector||s.buttonSelector);if(!ok)return{ok:false,message:'버튼을 찾지 못했습니다: '+target};
+      if(s.nextUrl)setTimeout(()=>location.href=tpl(s.nextUrl,p),150);
+      return{ok:true,message:'다음/제출 동작을 실행했습니다.',advanced:true};
+    }
+    const r=find(s.question||'',s.selector);if(!r)return{ok:false,message:'문항을 찾지 못했습니다: '+s.question};
+    const raw=s.answer,values=Array.isArray(raw)?raw.map((v:any)=>tpl(v,p)):tpl(raw,p),a=Array.isArray(values)?values[0]||'':values;
+    if(['choice','checkbox','agreement'].includes(s.type)){
+      const vs=Array.isArray(values)?values:[a];
+      for(const v of vs)if(!choose(r,v,s.checked!==false))return{ok:false,message:'선택하지 못했습니다: '+s.question};
+    }else{
+      const e=(s.inputSelector?document.querySelector(s.inputSelector):r.querySelector('textarea,input:not([type="radio"]):not([type="checkbox"]):not([type="hidden"]),select,[contenteditable="true"]')) as HTMLInputElement|HTMLTextAreaElement|null;
+      if(!e)return{ok:false,message:'입력란을 찾지 못했습니다: '+s.question};
+      if(e.tagName==='SELECT'){const o=[...(e as HTMLSelectElement).options].find(o=>norm(o.text)===norm(a)||norm(o.value)===norm(a));if(!o)return{ok:false,message:'선택지를 찾지 못했습니다: '+s.question};(e as HTMLSelectElement).value=o.value;e.dispatchEvent(new Event('change',{bubbles:true}))}
+      else if((e as HTMLElement).isContentEditable)(e as HTMLElement).textContent=a,e.dispatchEvent(new InputEvent('input',{bubbles:true,data:a,inputType:'insertText'}));
+      else val(e,a);
+    }
+  }
+  return{ok:true,message:'입력 완료',advanced:false};
+}
+
+async function executePending(p:any){
+  const i=Math.max(0,p?.cursor||0),forms=p?.kit?.forms||[],form=forms[i];
+  if(!form||!matches(form.url))return;
+  const next={...p,cursor:i+1};
+  const result=await runForm(form,p,async()=>chrome.storage.session.set({pendingRun:next}));
+  window.postMessage({source:'form-routine-kit-extension',type:'status',message:result.message},'*');
+  if(result.ok&&result.advanced){if(i+1>=forms.length)setTimeout(()=>chrome.storage.session.remove('pendingRun'),1200);return}
+  if(result.ok)await chrome.storage.session.remove('pendingRun');
+}
+
+chrome.runtime.onMessage.addListener((m,_s,send)=>{
+  if(m.cmd==='analyze'){send(analyze());return}
+  if(m.cmd==='run'){runForm(m.payload.form||m.payload,m.payload).then(send);return true}
+  if(m.cmd==='get-analysis'){chrome.storage.session.get('lastAnalysis').then(x=>send(x.lastAnalysis||null));return true}
+});
+
+window.addEventListener('message',e=>{
+  if(e.source!==window||e.data?.source!=='form-routine-kit-web')return;
+  if(e.data.type==='prepare')chrome.storage.session.set({pendingRun:{...e.data.payload,cursor:0}}).then(()=>window.postMessage({source:'form-routine-kit-extension',type:'prepared'},'*'));
+  if(e.data.type==='analyze-current-tab')chrome.runtime.sendMessage({cmd:'web-analyze'}).catch(()=>{});
+  if(e.data.type==='get-analysis')chrome.runtime.sendMessage({cmd:'get-analysis'}).then(a=>window.postMessage({source:'form-routine-kit-extension',type:'analysis',analysis:a},'*')).catch(()=>{});
+});
+
+const retry=async()=>{for(let i=0;i<24;i++){const x=await chrome.storage.session.get('pendingRun');if(x.pendingRun){await executePending(x.pendingRun);const y=await chrome.storage.session.get('pendingRun');if(!y.pendingRun)return}await new Promise(r=>setTimeout(r,500))}};
+retry().catch(()=>{});
