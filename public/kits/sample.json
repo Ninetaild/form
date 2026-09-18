@@ -1,0 +1,16 @@
+{
+  "version":1,
+  "title":"샘플 — 네이버 폼 기본 입력",
+  "forms":[
+    {
+      "url":"https://form.naver.com/response/AyVnS0SGIeN",
+      "steps":[
+        {"type":"choice","question":"민선9기 슬로건으로 가장 어울리는 것을 한가지만 선택해 주세요.","answer":"새로운 기준 이제는 인천시대"},
+        {"type":"choice","question":"당신의 성별은?","answer":"남성"},
+        {"type":"text","question":"이름","answer":"{{name}}"},
+        {"type":"phone","question":"휴대폰 번호","answer":"{{num}}"},
+        {"type":"choice","question":"개인정보 수집 및 이용 동의","answer":"동의합니다"}
+      ]
+    }
+  ]
+}
