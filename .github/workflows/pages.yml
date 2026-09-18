@@ -1,19 +1,15 @@
 name: Build and Deploy Form Routine Kit
-
 on:
   push:
     branches: ["main"]
   workflow_dispatch:
-
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
-
 concurrency:
   group: pages
   cancel-in-progress: true
-
 jobs:
   deploy:
     environment:
@@ -21,45 +17,26 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build web app and extension
-        run: npm run build
-
-      - name: Package extension
+      - run: npm ci
+      - run: npm run build
+      - name: Package extension only
         run: |
+          rm -rf public/download dist-extension
           mkdir -p public/download
-          cd dist-extension
-          zip -r ../public/download/form-routine-kit-extension.zip .
-          cd ..
-          rm -rf dist-extension
-
-      - name: Commit extension ZIP to repository
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/download/form-routine-kit-extension.zip public/index.html public/assets
-          git diff --cached --quiet || git commit -m "build: update extension download and web bundle [skip ci]"
-          git push || true
-
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+          cd dist-extension 2>/dev/null || true
+          if [ -d "$GITHUB_WORKSPACE/dist-extension" ]; then
+            cd "$GITHUB_WORKSPACE/dist-extension"
+            zip -r "$GITHUB_WORKSPACE/public/download/form-routine-kit-extension.zip" .
+          fi
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
         with:
           path: ./public
-
-      - name: Deploy to GitHub Pages
+      - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
