@@ -3,12 +3,12 @@ type Kit={file:string;title:string};type KitJson={version:number;title:string;fo
 const resolve=(u:string,n:string,num:string)=>String(u||'').replaceAll('{{name}}',encodeURIComponent(n)).replaceAll('{{num}}',encodeURIComponent(num));
 export default function App(){const[ks,setKs]=useState<Kit[]>([]),[file,setFile]=useState(''),[name,setName]=useState(''),[num,setNum]=useState(''),[ok,setOk]=useState(false),[status,setStatus]=useState('');
 useEffect(()=>{fetch('./kits/index.json').then(r=>{if(!r.ok)throw 0;return r.json()}).then((x:Kit[])=>{setKs(x);setFile(x[0]?.file||'')}).catch(()=>setStatus('Kit 목록을 읽지 못했습니다.'))},[]);
-const prepare=()=>new Promise<boolean>(resolveReady=>{let done=false;let timer=0;let attempts=0;
-const finish=(v:boolean)=>{if(done)return;done=true;clearInterval(timer);clearTimeout(timeout);window.removeEventListener('message',on);resolveReady(v)};
+const prepare=()=>new Promise<boolean>(resolveReady=>{let done=false;let retryTimer=0;let attempts=0;
+const finish=(v:boolean)=>{if(done)return;done=true;clearInterval(retryTimer);clearTimeout(timeout);window.removeEventListener('message',on);resolveReady(v)};
 const on=(e:MessageEvent)=>{if(e.source!==window||e.data?.source!=='form-routine-kit-extension')return;if(e.data.type==='ready'||e.data.type==='prepared')finish(true)};
 window.addEventListener('message',on);
-const send=()=>{attempts++;window.postMessage({source:'form-routine-kit-web',type:'prepare',payload:window.__formRoutinePayload},'*');if(attempts>=8)clearInterval(timer)};
-const timer=window.setInterval(send,250);const timeout=window.setTimeout(()=>finish(false),3000);send();
+const send=()=>{attempts++;window.postMessage({source:'form-routine-kit-web',type:'prepare',payload:window.__formRoutinePayload},'*');if(attempts>=8)clearInterval(retryTimer)};
+retryTimer=window.setInterval(send,250);const timeout=window.setTimeout(()=>finish(false),3000);send();
 });
 const run=async()=>{try{const kit=await fetch('./kits/'+file).then(r=>{if(!r.ok)throw 0;return r.json()}) as KitJson;const first=kit.forms?.[0];if(!first?.url)throw 0;const payload={kit,name:name.trim(),num:num.trim()};window.__formRoutinePayload=payload;const ready=await prepare();delete window.__formRoutinePayload;
 if(!ready){setStatus('확장 프로그램 연결을 확인하지 못했습니다. 확장 프로그램을 다시 로드한 뒤 이 페이지를 새로고침해 주세요.');return}
