@@ -1,4 +1,4 @@
-name: Deploy public to GitHub Pages
+name: Build and Deploy Form Routine Kit
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -24,10 +24,38 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build web app and extension
+        run: npm run build
+
+      - name: Package extension
+        run: |
+          mkdir -p public/download
+          cd dist-extension
+          zip -r ../public/download/form-routine-kit-extension.zip .
+          cd ..
+          rm -rf dist-extension
+
+      - name: Commit extension ZIP to repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/download/form-routine-kit-extension.zip public/index.html public/assets
+          git diff --cached --quiet || git commit -m "build: update extension download and web bundle [skip ci]"
+          git push || true
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload public directory
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./public
