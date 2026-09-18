@@ -1,0 +1,5 @@
+{
+  "name":"form-routine-kit","private":true,"version":"0.2.0","type":"module",
+  "scripts":{"build":"vite build && node scripts/build-extension.mjs"},
+  "dependencies":{"@vitejs/plugin-react":"^4.4.1","vite":"^6.3.5","typescript":"^5.8.3","react":"^19.1.0","react-dom":"^19.1.0"}
+}
