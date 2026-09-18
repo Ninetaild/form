@@ -1,4 +1,8 @@
+const BASE='https://raw.githubusercontent.com/Ninetaild/form/main/public/kits/';
 const $=id=>document.getElementById(id);
-async function getPayload(){const r=await chrome.storage.session.get('payload');return r.payload;}
-$('load').onclick=async()=>{const p=await getPayload();if(!p)return $('state').textContent='먼저 Kit 페이지에서 이름/연락처를 입력하세요.';const [tab]=await chrome.tabs.query({active:true,currentWindow:true});await chrome.tabs.sendMessage(tab.id,{cmd:'start',payload:p});window.close();};
-$('analyze').onclick=async()=>{const [tab]=await chrome.tabs.query({active:true,currentWindow:true});const r=await chrome.tabs.sendMessage(tab.id,{cmd:'analyze'});$('state').textContent=r?.summary||'분석 결과를 받지 못했습니다.';};
+let kits=[];
+async function init(){try{kits=await fetch(BASE+'index.json',{cache:'no-store'}).then(r=>r.json());$('kit').replaceChildren(...kits.map(x=>{const o=document.createElement('option');o.value=x.file;o.textContent=x.title||x.file;return o;}));}catch(e){$('status').textContent='Kit 목록을 불러오지 못했습니다.'}}
+$('agree').onchange=()=>{$('start').disabled=!$('agree').checked};
+$('start').onclick=async()=>{const kit=await fetch(BASE+$('kit').value,{cache:'no-store'}).then(r=>r.json());const payload={kit,name:$('name').value.trim(),phone:$('phone').value.replace(/\D/g,'')};await chrome.storage.session.set({payload});if(!kit.forms?.[0]?.url)return;$('status').textContent='첫 번째 폼을 엽니다.';await chrome.tabs.create({url:kit.forms[0].url});};
+$('run').onclick=async()=>{if(!$('agree').checked)return $('status').textContent='안내 확인에 체크해 주세요.';const kit=await fetch(BASE+$('kit').value,{cache:'no-store'}).then(r=>r.json());const payload={kit,name:$('name').value.trim(),phone:$('phone').value.replace(/\D/g,'')};await chrome.storage.session.set({payload});const [tab]=await chrome.tabs.query({active:true,currentWindow:true});try{const r=await chrome.tabs.sendMessage(tab.id,{cmd:'start',payload});$('status').textContent=r?.message||'실행했습니다.'}catch(e){$('status').textContent='현재 페이지에서 확장 프로그램을 실행할 수 없습니다.'}};
+init();
