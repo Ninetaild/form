@@ -29,10 +29,10 @@ const matches=(template:string)=>{const raw=tpl(template,{name:'',num:''});try{c
 function clickButton(label:string){const n=norm(label);const els=[...document.querySelectorAll('button,[role="button"],input[type="submit"],input[type="button"],a')].filter(vis);const el=els.find(x=>norm(textOf(x))===n)||els.find(x=>norm(textOf(x)).includes(n));if(!el)return false;(el as HTMLElement).click();return true}
 async function runForm(form:any,p:any,onAdvance?:()=>Promise<void>){
  for(const s of form.steps||[]){
-  if(s.type==='action'){const okTarget=!!(s.text||s.answer);if(!okTarget)return{ok:false,message:'실행할 버튼 이름이 없습니다.'};if(onAdvance)await onAdvance();const ok=clickButton(tpl(s.text||s.answer,p));if(!ok)return{ok:false,message:'버튼을 찾지 못했습니다: '+(s.text||s.answer)};return{ok:true,message:'다음 동작을 실행했습니다.',advanced:true}}
+  if(s.type==='action'){const okTarget=!!(s.text||s.answer);if(!okTarget)return{ok:false,message:'실행할 버튼 이름이 없습니다.'};if(onAdvance)await onAdvance();const ok=clickButton(tpl(s.text||s.answer,p));if(!ok)return{ok:false,message:'버튼을 찾지 못했습니다: '+(s.text||s.answer)};if(s.nextUrl)setTimeout(()=>{location.href=tpl(s.nextUrl,p)},100);return{ok:true,message:'다음 동작을 실행했습니다.',advanced:true}}
   const r=find(s.question||'');if(!r)return{ok:false,message:'문항을 찾지 못했습니다: '+s.question};
-  const a=tpl(s.answer,p);
-  if(['choice','checkbox','agreement'].includes(s.type)){if(!choose(r,a,s.checked!==false))return{ok:false,message:'선택하지 못했습니다: '+s.question}}
+  const rawAnswer=s.answer;const values=Array.isArray(rawAnswer)?rawAnswer.map((v:any)=>tpl(v,p)):tpl(rawAnswer,p);const a=Array.isArray(values)?values[0]||'':values;
+  if(['choice','checkbox','agreement'].includes(s.type)){const vals=Array.isArray(values)?values:[a];for(const v of vals){if(!choose(r,v,s.checked!==false))return{ok:false,message:'선택하지 못했습니다: '+s.question}}}
   else{const e=r.querySelector('textarea,input:not([type="radio"]):not([type="checkbox"]):not([type="hidden"]),select,[contenteditable="true"]') as HTMLInputElement|HTMLTextAreaElement|null;if(!e)return{ok:false,message:'입력란을 찾지 못했습니다: '+s.question};if((e as HTMLSelectElement).tagName==='SELECT'){const o=[...(e as HTMLSelectElement).options].find(o=>norm(o.text)===norm(a)||norm(o.value)===norm(a));if(!o)return{ok:false,message:'선택지를 찾지 못했습니다: '+s.question};(e as HTMLSelectElement).value=o.value;e.dispatchEvent(new Event('change',{bubbles:true}))}else val(e,a)}
  }
  return{ok:true,message:'입력 완료',advanced:false}
