@@ -1,2 +1,1 @@
-chrome.runtime.onMessage.addListener((msg,sender,sendResponse)=>{if(msg.cmd==='savePayload'){chrome.storage.session.set({payload:msg.payload}).then(()=>sendResponse({ok:true}));return true;}});
-chrome.tabs.onUpdated.addListener(async(tabId,info)=>{if(info.status!=='complete')return;const p=(await chrome.storage.session.get('payload')).payload;if(p)try{await chrome.tabs.sendMessage(tabId,{cmd:'continue',payload:p});}catch{}});
+chrome.tabs.onUpdated.addListener(async(tabId,info)=>{if(info.status!=='complete')return;const {payload}=await chrome.storage.session.get('payload');if(!payload)return;try{await chrome.tabs.sendMessage(tabId,{cmd:'continue',payload});}catch{}});
