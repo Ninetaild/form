@@ -25,11 +25,11 @@ function choose(root:Element,a:string,checked=true){
  (el as HTMLElement).click();return true
 }
 const tpl=(v:any,p:any)=>String(v??'').replaceAll('{{name}}',p?.name||'').replaceAll('{{num}}',p?.num||'').replaceAll('{{phone}}',p?.num||'');
-const matches=(template:string)=>{try{const raw=tpl(template,{name:'',num:''});const t=new URL(raw,location.href);return t.origin===location.origin&&t.pathname===location.pathname}catch{return location.href.startsWith(raw)}};
+const matches=(template:string)=>{const raw=tpl(template,{name:'',num:''});try{const t=new URL(raw,location.href);return t.origin===location.origin&&t.pathname===location.pathname}catch{return location.href.startsWith(raw)}};
 function clickButton(label:string){const n=norm(label);const els=[...document.querySelectorAll('button,[role="button"],input[type="submit"],input[type="button"],a')].filter(vis);const el=els.find(x=>norm(textOf(x))===n)||els.find(x=>norm(textOf(x)).includes(n));if(!el)return false;(el as HTMLElement).click();return true}
-async function runForm(form:any,p:any){
+async function runForm(form:any,p:any,onAdvance?:()=>Promise<void>){
  for(const s of form.steps||[]){
-  if(s.type==='action'){const ok=clickButton(tpl(s.text||s.answer,p));if(!ok)return{ok:false,message:'버튼을 찾지 못했습니다: '+(s.text||s.answer)};return{ok:true,message:'다음 동작을 실행했습니다.',advanced:true}}
+  if(s.type==='action'){const okTarget=!!(s.text||s.answer);if(!okTarget)return{ok:false,message:'실행할 버튼 이름이 없습니다.'};if(onAdvance)await onAdvance();const ok=clickButton(tpl(s.text||s.answer,p));if(!ok)return{ok:false,message:'버튼을 찾지 못했습니다: '+(s.text||s.answer)};return{ok:true,message:'다음 동작을 실행했습니다.',advanced:true}}
   const r=find(s.question||'');if(!r)return{ok:false,message:'문항을 찾지 못했습니다: '+s.question};
   const a=tpl(s.answer,p);
   if(['choice','checkbox','agreement'].includes(s.type)){if(!choose(r,a,s.checked!==false))return{ok:false,message:'선택하지 못했습니다: '+s.question}}
@@ -41,11 +41,7 @@ async function executePending(p:any){
  const i=Math.max(0,p?.cursor||0),forms=p?.kit?.forms||[],form=forms[i];
  if(!form)return;
  if(!matches(tpl(form.url,p)))return;
- const result=await runForm(form,p);
- if(result.advanced){
-   const next={...p,cursor:i+1};
-   await chrome.storage.session.set({pendingRun:next});
- }else await chrome.storage.session.remove('pendingRun');
+ const next={...p,cursor:i+1};const result=await runForm(form,p,async()=>{await chrome.storage.session.set({pendingRun:next})});if(result.advanced){}else await chrome.storage.session.remove('pendingRun');
  window.postMessage({source:'form-routine-kit-extension',type:'status',message:result.message},'*')
 }
 chrome.runtime.onMessage.addListener((m,_s,send)=>{if(m.cmd==='analyze'){send(analyze());return}if(m.cmd==='run'){runForm(m.payload.form||m.payload,m.payload).then(send);return true}if(m.cmd==='get-analysis'){chrome.storage.session.get('lastAnalysis').then(x=>send(x.lastAnalysis||null));return true}});
