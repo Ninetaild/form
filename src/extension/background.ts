@@ -44,6 +44,21 @@ chrome.tabs.onUpdated.addListener((tabId,changeInfo)=>{
 });
 chrome.tabs.onRemoved.addListener(tabId=>tabRoutines.delete(tabId));
 chrome.runtime.onMessage.addListener((m,s,send)=>{
+ if(m.cmd==='prepare-run'){
+  const forms=(m.payload?.kit?.forms||[]).filter((f:any)=>String(f.url||'').trim());
+  if(!forms.length){send({ok:false,message:'실행할 폼이 없습니다.'});return false}
+  try{
+   const opened:number[]=[];
+   for(const form of forms){
+    const tab=await chrome.tabs.create({url:String(form.url).trim(),active:opened.length===0});
+    if(tab.id!=null){tabRoutines.set(tab.id,form);opened.push(tab.id)}
+   }
+   send({ok:true,message:opened.length+'개 대상 페이지를 준비했습니다.'});
+  }catch(e:any){
+   send({ok:false,message:'대상 페이지를 열지 못했습니다: '+String(e?.message||e||'알 수 없는 오류')});
+  }
+  return false;
+ }
  if(m.cmd==='run-routines'){
   const forms=(m.forms||[]).filter((f:any)=>String(f.url||'').trim());
   if(!forms.length){send({ok:false,message:'실행할 루틴이 없습니다.'});return false}
