@@ -43,7 +43,7 @@ chrome.tabs.onUpdated.addListener((tabId,changeInfo)=>{
  });
 });
 chrome.tabs.onRemoved.addListener(tabId=>tabRoutines.delete(tabId));
-chrome.runtime.onMessage.addListener((m,s,send)=>{
+chrome.runtime.onMessage.addListener(async (m,s,send)=>{
  if(m.cmd==='prepare-run'){
   const forms=(m.payload?.kit?.forms||[]).filter((f:any)=>String(f.url||'').trim());
   if(!forms.length){send({ok:false,message:'실행할 폼이 없습니다.'});return false}
