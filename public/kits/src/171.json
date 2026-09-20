@@ -1,0 +1,554 @@
+{
+  "version": 5,
+  "title": "국민연금공단 <국민연금 가치체계 개선 간단퀴즈&설문조사 이벤트>",
+  "forms": [
+    {
+      "url": "https://naver.me/xKy38dTh",
+      "title": "루틴 1",
+      "steps": [
+        {
+          "type": "checkbox",
+          "question": "nsv-survey-question-choice-2",
+          "answer": [
+            "O"
+          ],
+          "choiceItems": [
+            {
+              "text": "O",
+              "value": "on",
+              "selector": "#nsv-survey-question-2-item-0",
+              "checked": false
+            },
+            {
+              "text": "X",
+              "value": "on",
+              "selector": "#nsv-survey-question-2-item-1",
+              "checked": false
+            }
+          ],
+          "choices": [
+            "O",
+            "X"
+          ],
+          "checked": true,
+          "manual": false
+        },
+        {
+          "type": "checkbox",
+          "question": "nsv-survey-question-choice-3",
+          "answer": [
+            "남성"
+          ],
+          "choiceItems": [
+            {
+              "text": "남성",
+              "value": "on",
+              "selector": "#nsv-survey-question-3-item-0",
+              "checked": false
+            },
+            {
+              "text": "여성",
+              "value": "on",
+              "selector": "#nsv-survey-question-3-item-1",
+              "checked": false
+            }
+          ],
+          "choices": [
+            "남성",
+            "여성"
+          ],
+          "checked": true,
+          "manual": false
+        },
+        {
+          "type": "checkbox",
+          "question": "nsv-survey-question-choice-4",
+          "answer": [
+            "10-20대"
+          ],
+          "choiceItems": [
+            {
+              "text": "10-20대",
+              "value": "on",
+              "selector": "#nsv-survey-question-4-item-0",
+              "checked": false
+            },
+            {
+              "text": "30대",
+              "value": "on",
+              "selector": "#nsv-survey-question-4-item-1",
+              "checked": false
+            },
+            {
+              "text": "40대",
+              "value": "on",
+              "selector": "#nsv-survey-question-4-item-2",
+              "checked": false
+            },
+            {
+              "text": "50대",
+              "value": "on",
+              "selector": "#nsv-survey-question-4-item-3",
+              "checked": false
+            },
+            {
+              "text": "60대 이상",
+              "value": "on",
+              "selector": "#nsv-survey-question-4-item-4",
+              "checked": false
+            }
+          ],
+          "choices": [
+            "10-20대",
+            "30대",
+            "40대",
+            "50대",
+            "60대 이상"
+          ],
+          "checked": true,
+          "manual": false
+        },
+        {
+          "type": "name",
+          "question": "이름을 입력해주세요.",
+          "answer": "{{name}}",
+          "checked": true
+        },
+        {
+          "type": "action",
+          "text": "입력 내용 삭제",
+          "question": "입력 내용 삭제",
+          "manual": false
+        },
+        {
+          "type": "num",
+          "question": "연락처를 입력해주세요. (-없이 번호만 입력)",
+          "answer": "{{phone}}",
+          "checked": true
+        },
+        {
+          "type": "choice",
+          "question": "nsv-survey-question-personal-info-agree-v2-7",
+          "answer": "동의합니다",
+          "choiceItems": [
+            {
+              "text": "동의합니다",
+              "value": "on",
+              "selector": "#nsv-survey-question-personal-info-agree-v2-7-0",
+              "checked": false
+            },
+            {
+              "text": "동의하지 않습니다",
+              "value": "on",
+              "selector": "#nsv-survey-question-personal-info-agree-v2-7-1",
+              "checked": false
+            }
+          ],
+          "choices": [
+            "동의합니다",
+            "동의하지 않습니다"
+          ],
+          "checked": true,
+          "manual": false
+        },
+        {
+          "type": "checkbox",
+          "question": "nsv-survey-question-choice-8",
+          "answer": [
+            "그렇다"
+          ],
+          "choiceItems": [
+            {
+              "text": "그렇다",
+              "value": "on",
+              "selector": "#nsv-survey-question-8-item-0",
+              "checked": false
+            },
+            {
+              "text": "약간 그렇다",
+              "value": "on",
+              "selector": "#nsv-survey-question-8-item-1",
+              "checked": false
+            },
+            {
+              "text": "보통이다",
+              "value": "on",
+              "selector": "#nsv-survey-question-8-item-2",
+              "checked": false
+            },
+            {
+              "text": "약간 아니다",
+              "value": "on",
+              "selector": "#nsv-survey-question-8-item-3",
+              "checked": false
+            },
+            {
+              "text": "아니다",
+              "value": "on",
+              "selector": "#nsv-survey-question-8-item-4",
+              "checked": false
+            }
+          ],
+          "choices": [
+            "그렇다",
+            "약간 그렇다",
+            "보통이다",
+            "약간 아니다",
+            "아니다"
+          ],
+          "checked": true,
+          "manual": false
+        },
+        {
+          "type": "checkbox",
+          "question": "nsv-survey-question-choice-9",
+          "answer": [
+            "그렇다"
+          ],
+          "choiceItems": [
+            {
+              "text": "그렇다",
+              "value": "on",
+              "selector": "#nsv-survey-question-9-item-0",
+              "checked": false
+            },
+            {
+              "text": "약간 그렇다",
+              "value": "on",
+              "selector": "#nsv-survey-question-9-item-1",
+              "checked": false
+            },
+            {
+              "text": "보통이다",
+              "value": "on",
+              "selector": "#nsv-survey-question-9-item-2",
+              "checked": false
+            },
+            {
+              "text": "약간 아니다",
+              "value": "on",
+              "selector": "#nsv-survey-question-9-item-3",
+              "checked": false
+            },
+            {
+              "text": "아니다",
+              "value": "on",
+              "selector": "#nsv-survey-question-9-item-4",
+              "checked": false
+            }
+          ],
+          "choices": [
+            "그렇다",
+            "약간 그렇다",
+            "보통이다",
+            "약간 아니다",
+            "아니다"
+          ],
+          "checked": true,
+          "manual": false
+        },
+        {
+          "type": "checkbox",
+          "question": "nsv-survey-question-choice-10",
+          "answer": [
+            "그렇다"
+          ],
+          "choiceItems": [
+            {
+              "text": "그렇다",
+              "value": "on",
+              "selector": "#nsv-survey-question-10-item-0",
+              "checked": false
+            },
+            {
+              "text": "약간 그렇다",
+              "value": "on",
+              "selector": "#nsv-survey-question-10-item-1",
+              "checked": false
+            },
+            {
+              "text": "보통이다",
+              "value": "on",
+              "selector": "#nsv-survey-question-10-item-2",
+              "checked": false
+            },
+            {
+              "text": "약간 아니다",
+              "value": "on",
+              "selector": "#nsv-survey-question-10-item-3",
+              "checked": false
+            },
+            {
+              "text": "아니다",
+              "value": "on",
+              "selector": "#nsv-survey-question-10-item-4",
+              "checked": false
+            }
+          ],
+          "choices": [
+            "그렇다",
+            "약간 그렇다",
+            "보통이다",
+            "약간 아니다",
+            "아니다"
+          ],
+          "checked": true,
+          "manual": false
+        },
+        {
+          "type": "checkbox",
+          "question": "nsv-survey-question-choice-11",
+          "answer": [
+            "그렇다"
+          ],
+          "choiceItems": [
+            {
+              "text": "그렇다",
+              "value": "on",
+              "selector": "#nsv-survey-question-11-item-0",
+              "checked": false
+            },
+            {
+              "text": "약간 그렇다",
+              "value": "on",
+              "selector": "#nsv-survey-question-11-item-1",
+              "checked": false
+            },
+            {
+              "text": "보통이다",
+              "value": "on",
+              "selector": "#nsv-survey-question-11-item-2",
+              "checked": false
+            },
+            {
+              "text": "약간 아니다",
+              "value": "on",
+              "selector": "#nsv-survey-question-11-item-3",
+              "checked": false
+            },
+            {
+              "text": "아니다",
+              "value": "on",
+              "selector": "#nsv-survey-question-11-item-4",
+              "checked": false
+            }
+          ],
+          "choices": [
+            "그렇다",
+            "약간 그렇다",
+            "보통이다",
+            "약간 아니다",
+            "아니다"
+          ],
+          "checked": true,
+          "manual": false
+        },
+        {
+          "type": "checkbox",
+          "question": "nsv-survey-question-choice-12",
+          "answer": [
+            "그렇다"
+          ],
+          "choiceItems": [
+            {
+              "text": "그렇다",
+              "value": "on",
+              "selector": "#nsv-survey-question-12-item-0",
+              "checked": false
+            },
+            {
+              "text": "약간 그렇다",
+              "value": "on",
+              "selector": "#nsv-survey-question-12-item-1",
+              "checked": false
+            },
+            {
+              "text": "보통이다",
+              "value": "on",
+              "selector": "#nsv-survey-question-12-item-2",
+              "checked": false
+            },
+            {
+              "text": "약간 아니다",
+              "value": "on",
+              "selector": "#nsv-survey-question-12-item-3",
+              "checked": false
+            },
+            {
+              "text": "아니다",
+              "value": "on",
+              "selector": "#nsv-survey-question-12-item-4",
+              "checked": false
+            }
+          ],
+          "choices": [
+            "그렇다",
+            "약간 그렇다",
+            "보통이다",
+            "약간 아니다",
+            "아니다"
+          ],
+          "checked": true,
+          "manual": false
+        },
+        {
+          "type": "checkbox",
+          "question": "nsv-survey-question-choice-13",
+          "answer": [
+            "그렇다"
+          ],
+          "choiceItems": [
+            {
+              "text": "그렇다",
+              "value": "on",
+              "selector": "#nsv-survey-question-13-item-0",
+              "checked": false
+            },
+            {
+              "text": "약간 그렇다",
+              "value": "on",
+              "selector": "#nsv-survey-question-13-item-1",
+              "checked": false
+            },
+            {
+              "text": "보통이다",
+              "value": "on",
+              "selector": "#nsv-survey-question-13-item-2",
+              "checked": false
+            },
+            {
+              "text": "약간 아니다",
+              "value": "on",
+              "selector": "#nsv-survey-question-13-item-3",
+              "checked": false
+            },
+            {
+              "text": "아니다",
+              "value": "on",
+              "selector": "#nsv-survey-question-13-item-4",
+              "checked": false
+            }
+          ],
+          "choices": [
+            "그렇다",
+            "약간 그렇다",
+            "보통이다",
+            "약간 아니다",
+            "아니다"
+          ],
+          "checked": true,
+          "manual": false
+        },
+        {
+          "type": "checkbox",
+          "question": "nsv-survey-question-choice-14",
+          "answer": [
+            "그렇다"
+          ],
+          "choiceItems": [
+            {
+              "text": "그렇다",
+              "value": "on",
+              "selector": "#nsv-survey-question-14-item-0",
+              "checked": false
+            },
+            {
+              "text": "약간 그렇다",
+              "value": "on",
+              "selector": "#nsv-survey-question-14-item-1",
+              "checked": false
+            },
+            {
+              "text": "보통이다",
+              "value": "on",
+              "selector": "#nsv-survey-question-14-item-2",
+              "checked": false
+            },
+            {
+              "text": "약간 아니다",
+              "value": "on",
+              "selector": "#nsv-survey-question-14-item-3",
+              "checked": false
+            },
+            {
+              "text": "아니다",
+              "value": "on",
+              "selector": "#nsv-survey-question-14-item-4",
+              "checked": false
+            }
+          ],
+          "choices": [
+            "그렇다",
+            "약간 그렇다",
+            "보통이다",
+            "약간 아니다",
+            "아니다"
+          ],
+          "checked": true,
+          "manual": false
+        },
+        {
+          "type": "checkbox",
+          "question": "nsv-survey-question-choice-15",
+          "answer": [
+            "그렇다"
+          ],
+          "choiceItems": [
+            {
+              "text": "그렇다",
+              "value": "on",
+              "selector": "#nsv-survey-question-15-item-0",
+              "checked": false
+            },
+            {
+              "text": "약간 그렇다",
+              "value": "on",
+              "selector": "#nsv-survey-question-15-item-1",
+              "checked": false
+            },
+            {
+              "text": "보통이다",
+              "value": "on",
+              "selector": "#nsv-survey-question-15-item-2",
+              "checked": false
+            },
+            {
+              "text": "약간 아니다",
+              "value": "on",
+              "selector": "#nsv-survey-question-15-item-3",
+              "checked": false
+            },
+            {
+              "text": "아니다",
+              "value": "on",
+              "selector": "#nsv-survey-question-15-item-4",
+              "checked": false
+            }
+          ],
+          "choices": [
+            "그렇다",
+            "약간 그렇다",
+            "보통이다",
+            "약간 아니다",
+            "아니다"
+          ],
+          "checked": true,
+          "manual": false
+        },
+        {
+          "type": "text",
+          "question": "답변을 입력해주세요.",
+          "answer": "모두가 빈곤하지 않은 노후를 보낼 수 있게 되면 좋겠습니다",
+          "checked": true
+        },
+        {
+          "type": "action",
+          "text": "다음",
+          "question": "다음",
+          "selector": "#nsv_page_control_next",
+          "manual": true
+        }
+      ]
+    }
+  ]
+}
