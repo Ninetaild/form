@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Form Routine Kit",
-  "version": "0.5.0",
+  "version": "0.4.1",
   "description": "개발자 도구에서 가져온 HTML로 폼 루틴을 만들고 여러 URL에 자동 입력·선택합니다.",
   "permissions": ["tabs","windows","scripting"],
   "optional_host_permissions": ["http://*/*","https://*/*"],
