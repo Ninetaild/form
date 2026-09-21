@@ -121,9 +121,17 @@ chrome.runtime.onMessage.addListener((m:any,s,send)=>{
  }
  if(m.cmd==='stop-all'){
   const entries=[...tabRoutines.entries()];
-  for(const [tabId,entry] of entries){try{await chrome.tabs.sendMessage(tabId,{cmd:'stop'})}catch{}await removeHost(entry.pattern);log(entry.webTabId,'중지 요청을 전달했습니다.','warn');tabRoutines.delete(tabId)}
-  refreshBadge();
-  send({ok:true,message:'실행을 중지했습니다.'});return false;
+  void (async()=>{
+   for(const [tabId,entry] of entries){
+    try{await chrome.tabs.sendMessage(tabId,{cmd:'stop'})}catch{}
+    await removeHost(entry.pattern);
+    log(entry.webTabId,'중지 요청을 전달했습니다.','warn');
+    tabRoutines.delete(tabId);
+   }
+   refreshBadge();
+   send({ok:true,message:'실행을 중지했습니다.'});
+  })();
+  return true;
  }
  return false;
 });
