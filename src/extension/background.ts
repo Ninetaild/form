@@ -75,7 +75,7 @@ chrome.action.onClicked.addListener(async(tab)=>{
  if(tab?.id!=null){
   const pattern=originPattern(String(tab.url||''));
   if(pattern&&!await hasPermission(pattern)){
-   try{await chrome.permissions.request({origins:[pattern]})}catch{}
+   try{await chrome.permissions.addHostAccessRequest({tabId:tab.id,pattern})}catch{}
   }
  }
  await rememberTargetTab();
@@ -96,7 +96,7 @@ chrome.runtime.onMessage.addListener((m:any,s,send)=>{
  if(m.cmd==='run-routines'){
   const forms=(m.forms||[]).filter((f:any)=>String(f.url||'').trim()),webTabId=s.tab?.id??panelTargetTabId??-1;
   if(!forms.length){send({ok:false,message:'실행할 루틴이 없습니다.'});return false}badgeOn();
-  void (async()=>{for(const form of forms){try{const tab=await chrome.tabs.create({url:String(form.url).trim(),active:true});if(tab.id!=null)await prepareTab(tab.id,form,webTabId)}catch(e:any){log(webTabId,'루틴 준비 실패: '+String(e?.message||e||''))}}send({ok:true,message:forms.length+'개 루틴 URL을 준비했습니다.'})})();return true;
+  void (async()=>{for(const form of forms){try{const tab=await chrome.tabs.create({url:String(form.url).trim(),active:true});if(tab.id!=null)await prepareTab(tab.id,form,webTabId)}catch(e:any){log(webTabId,'루틴 준비 실패: '+String(e?.message||e?.message||''))}}send({ok:true,message:forms.length+'개 루틴 URL을 준비했습니다.'})})();return true;
  }
  if(m.cmd==='stop-all'){const entries=[...tabRoutines.entries()];void (async()=>{for(const [tabId,entry] of entries){try{await chrome.tabs.sendMessage(tabId,{cmd:'stop'})}catch{}log(entry.webTabId,'중지 요청을 전달했습니다.','warn');tabRoutines.delete(tabId)}for(const [tabId,entry] of pendingTabs){try{await chrome.permissions.removeHostAccessRequest({tabId,pattern:entry.pattern})}catch{}pendingTabs.delete(tabId);log(entry.webTabId,'대기 중인 사이트 권한 요청을 중지했습니다.','warn')}refreshBadge();send({ok:true,message:'실행을 중지했습니다.'})})();return true}
  return false;
