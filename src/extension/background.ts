@@ -40,9 +40,10 @@ async function prepareTab(tabId:number,form:any,webTabId:number){
  log(webTabId,'사이트 접근 권한이 허용되었습니다. 페이지에 기능을 연결합니다.','ok');
  await inject(tabId);
  await new Promise(r=>setTimeout(r,250));
- tabRoutines.set(tabId,{form,pattern,webTabId});
+ const entry={form,pattern,webTabId};tabRoutines.set(tabId,entry);
  refreshBadge();
  log(webTabId,'자동 입력 준비가 완료되었습니다.','ok');
+ void runRoutineInTab(tabId,entry);
 }
 
 async function rememberTargetTab(){
@@ -61,7 +62,7 @@ async function runRoutineInTab(tabId:number,entry:{form:any,pattern:string,webTa
    log(entry.webTabId,r?.ok?'정해진 답변 입력이 완료되었습니다. 다음/제출/동의는 직접 확인하세요.':'사용자 확인이 필요한 항목에서 자동 입력을 중지했습니다.',r?.ok?'ok':'warn');
    await removeHost(entry.pattern);
    tabRoutines.delete(tabId);refreshBadge();
-   log(entry.webTabId,'작업을 종료하고 사이트 접근 권한을 제거했습니다.','ok');
+   log(entry.webTabId,'작업을 종료하고 사이트 접근 권한을 제거했습니다.','ok');try{chrome.tabs.sendMessage(entry.webTabId,{cmd:'ui-finished'})}catch{}
    return r
   }
  }catch(e:any){log(entry.webTabId,'대상 페이지와 통신하지 못했습니다: '+String(e?.message||e||''),'warn')}
