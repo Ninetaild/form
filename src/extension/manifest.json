@@ -1,11 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "Form Routine Kit",
-  "version": "0.4.4",
-  "description": "개발자 도구에서 가져온 HTML로 폼 루틴을 만들고 여러 URL에 자동 입력·선택합니다.",
-  "permissions": ["tabs","windows","scripting"],
-  "host_permissions": ["http://*/*","https://*/*"],
-  "action": {"default_title":"Form Routine Kit 실행 상태"},
-  "background": {"service_worker":"background.js"},
-  "content_scripts": [{"matches":["https://ninetaild.github.io/*"],"js":["content.js"],"run_at":"document_idle"}]
+  "name": "Form Routine Kit - Event Kit 제작기",
+  "version": "0.5.0",
+  "description": "이벤트명, URL, 정답을 직접 입력해 개인정보 없는 JSON Kit을 만듭니다.",
+  "action": {"default_title":"Event Kit 제작기","default_popup":"popup.html"}
 }
