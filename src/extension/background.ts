@@ -93,6 +93,8 @@ chrome.runtime.onMessage.addListener((m:any,s,send)=>{
   const forms=(m.payload?.kit?.forms||[]).filter((f:any)=>String(f.url||'').trim());
   const webTabId=s.tab?.id??panelTargetTabId??-1;
   if(!forms.length){send({ok:false,message:'실행할 폼이 없습니다.'});return false}
+  badgeOn();
+  log(webTabId,'실행을 시작했습니다. 대상 사이트 권한을 확인합니다.');
   void (async()=>{
    try{
     for(const form of forms){
@@ -103,6 +105,7 @@ chrome.runtime.onMessage.addListener((m:any,s,send)=>{
     send({ok:true,message:forms.length+'개 대상 페이지를 준비했습니다.'});
    }catch(e:any){
     log(webTabId,'실행 준비 중 오류: '+String(e?.message||e||'알 수 없는 오류'),'error');
+    refreshBadge();
     send({ok:false,message:String(e?.message||e||'실행 준비에 실패했습니다.')});
    }
   })();
