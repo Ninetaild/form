@@ -37,7 +37,9 @@ const waitFor=async<T>(fn:()=>T|null|undefined,tries=18)=>{for(let i=0;i<tries;i
 const personal=(v:any)=>/^\{\{(?:name|phone)\}\}$/.test(String(v??'').trim());
 
 async function runForm(form:any){
+ stopRequested=false;
  for(const s of form.steps||[]){
+  if(stopRequested)return{ok:false,stopped:true,message:'사용자 요청으로 실행을 중지했습니다.'};
   const info=String(s.question||'')+' '+String(s.answer||'');
   if(s.manual||s.type==='agreement'||/개인정보.*동의|제3자.*제공|마케팅.*동의|약관.*동의/i.test(info))return{ok:false,manual:true,message:'개인정보·약관·동의 항목은 직접 확인해 주세요.'};
   if(s.type==='action'){
@@ -66,6 +68,7 @@ async function runForm(form:any){
 }
 function toast(r:any){const old=document.getElementById('form-routine-kit-status');old?.remove();const b=document.createElement('div');b.id='form-routine-kit-status';b.textContent=r?.ok?'정해진 답변 입력 완료 · 작업 종료':'입력이 중단되었습니다 · 다음/제출/동의는 직접 확인해 주세요';Object.assign(b.style,{position:'fixed',zIndex:'2147483647',right:'16px',bottom:'16px',maxWidth:'420px',padding:'12px 14px',borderRadius:'10px',background:'#111827',color:'#fff',font:'600 13px/1.45 system-ui,sans-serif'});(document.body||document.documentElement).append(b);setTimeout(()=>b.remove(),5000)}
 let done=false;
+let stopRequested=false;
 function cssPath(el:Element){
  const h=el as HTMLElement;if(h.id)return '#'+CSS.escape(h.id);
  const attrs=['data-testid','data-test','aria-label','name','placeholder'];
@@ -105,5 +108,5 @@ function captureForm(){
  }
  return{version:7,title:document.title,forms:[{url:location.href,title:document.title,steps}]};
 }
-chrome.runtime.onMessage.addListener((m:any,_s,send)=>{if(m.cmd==='capture-form'){try{send({ok:true,form:captureForm()})}catch(err){send({ok:false,message:String((err as any)?.message||err||'폼을 읽지 못했습니다.')})}return true}if(m.cmd!=='run'||done)return false;done=true;runForm(m.payload.form||m.payload).then(r=>{toast(r);send(r)}).catch(()=>{const r={ok:false,message:'입력 중 오류가 발생했습니다.'};toast(r);send(r)});return true});
+chrome.runtime.onMessage.addListener((m:any,_s,send)=>{if(m.cmd==='ui-log'){window.postMessage({source:'form-routine-kit-extension',type:'log',payload:m.payload||{}},location.origin);return false}if(m.cmd==='stop'){stopRequested=true;done=true;window.postMessage({source:'form-routine-kit-extension',type:'stopped'},location.origin);send({ok:true});return false}if(m.cmd==='capture-form'){try{send({ok:true,form:captureForm()})}catch(err){send({ok:false,message:String((err as any)?.message||err||'폼을 읽지 못했습니다.')})}return true}if(m.cmd!=='run'||done)return false;done=true;runForm(m.payload.form||m.payload).then(r=>{toast(r);send(r)}).catch(()=>{const r={ok:false,message:'입력 중 오류가 발생했습니다.'};toast(r);send(r)});return true});
 window.addEventListener('message',e=>{if(!isWeb(e))return;if(e.data.type==='ping'){post('pong');return}if(e.data.type==='prepare'){const requestId=e.data.requestId;chrome.runtime.sendMessage({cmd:'prepare-run',payload:e.data.payload||{}},r=>r?.ok?post('prepared',{requestId}):post('prepare-error',{requestId,message:r?.message||'실행 준비에 실패했습니다.'}))}});
