@@ -7,6 +7,9 @@ type Form={url:string;title?:string;steps:Step[];nextUrl?:string};
 type Kit={version:number;title:string;forms:Form[]};
 
 const web='https://ninetaild.github.io/form/';
+const originPattern=(url:string)=>{try{const u=new URL(url);if(!/^https?:$/.test(u.protocol))return null;return u.origin+'/*'}catch{return null}};
+const requestOrigins=async(origins:string[])=>{const unique=[...new Set(origins)].filter(Boolean);if(!unique.length)return false;const missing:string[]=[];for(const origin of unique){try{if(!(await chrome.permissions.contains({origins:[origin]})))missing.push(origin)}catch{missing.push(origin)}}if(!missing.length)return true;try{return await chrome.permissions.request({origins:missing})}catch{return false}};
+const requestCurrentSiteAccess=async()=>{try{const tabs=await chrome.tabs.query({active:true,currentWindow:true}),tab=tabs[0],pattern=originPattern(String(tab?.url||''));if(!pattern)return{ok:false,message:'현재 탭은 웹사이트 권한을 요청할 수 없는 페이지입니다.'};const granted=await requestOrigins([pattern]);return granted?{ok:true,message:'현재 사이트의 페이지 권한을 허용했습니다.'}:{ok:false,message:'사이트 권한이 허용되지 않았습니다.'}}catch{return{ok:false,message:'사이트 권한 요청에 실패했습니다.'}}};
 const save=(name:string,data:any)=>{const u=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)};
 const clean=(s:any)=>String(s??'').replace(/\\s+/g,' ').trim();
 const parseDeveloperHtml=(html:string):Step[]=>{
@@ -86,18 +89,22 @@ export default function Popup(){
   try{
    const tabs=await chrome.tabs.query({active:true,currentWindow:true}),tab=tabs[0];
    if(!tab?.id){setS('현재 탭을 찾지 못했습니다.');return}
+   const access=await requestCurrentSiteAccess();
+   if(!access.ok){setS(access.message);return}
    const r=await chrome.tabs.sendMessage(tab.id,{cmd:'capture-form'});
    if(!r?.ok){setS(r?.message||'현재 폼을 읽지 못했습니다.');return}
    const form=r.form;
    setUrl(form.url||'');setSteps(form.steps||[]);setS('현재 작성된 폼 상태를 가져왔습니다. 이름은 {{name}}, 연락처는 {{phone}}으로 저장했습니다.');
   }catch{setS('현재 페이지의 폼을 읽지 못했습니다. 확장 프로그램을 새로고침한 뒤 대상 폼에서 다시 시도해 주세요.')}
  };
- const openAll=async()=>{const copy=[...routines];copy[activeRoutine]=snapshot();setRoutines(copy);const forms=copy.filter(f=>f.url);if(!forms.length){setS('열 수 있는 URL이 있는 루틴이 없습니다.');return}try{const r=await chrome.runtime.sendMessage({cmd:'run-routines',forms});setS(r?.ok?r.message||forms.length+'개 루틴을 실행했습니다.':'루틴 실행에 실패했습니다.');}catch{setS('루틴 실행 연결에 실패했습니다. 확장 프로그램을 새로고침해 주세요.')}};
+ const openAll=async()=>{const copy=[...routines];copy[activeRoutine]=snapshot();setRoutines(copy);const forms=copy.filter(f=>f.url);if(!forms.length){setS('열 수 있는 URL이 있는 루틴이 없습니다.');return}const patterns=forms.map(f=>originPattern(String(f.url||''))).filter((x):x is string=>!!x);if(!await requestOrigins(patterns)){setS('루틴에 필요한 사이트 권한이 허용되지 않았습니다.');return}try{const r=await chrome.runtime.sendMessage({cmd:'run-routines',forms});setS(r?.ok?r.message||forms.length+'개 루틴을 실행했습니다.':'루틴 실행에 실패했습니다.');}catch{setS('루틴 실행 연결에 실패했습니다. 확장 프로그램을 새로고침해 주세요.')}};
  const build=():Kit=>{const copy=[...routines];copy[activeRoutine]=snapshot();return{version:5,title,forms:copy.map((f,i)=>({...f,title:'루틴 '+(i+1),steps:f.steps||[]}))}};
 
  return <main style={{width:410,padding:14,fontFamily:'system-ui',boxSizing:'border-box'}}>
   <h3>Form Routine Kit</h3>
   <button style={{width:'100%',padding:8}} onClick={()=>chrome.tabs.create({url:web})}>Kit 실행 화면</button>
+  <button style={{width:'100%',padding:10,marginTop:6,background:'#f3f4f6',border:'1px solid #d1d5db',borderRadius:6}} onClick={async()=>{const r=await requestCurrentSiteAccess();setS(r.message)}}>현재 사이트 페이지 권한 허용</button>
+  <p style={{fontSize:11,color:'#666',margin:'5px 0 8px'}}>현재 열려 있는 웹사이트만 권한을 요청합니다. 모든 사이트 권한을 미리 받지 않습니다.</p>
   <p style={{fontSize:12,color:'#555'}}>페이지 읽기와 마우스 선택 없이, 개발자 도구 HTML만으로 루틴을 구성합니다.</p>
   <button style={{width:'100%',padding:10,background:'#2563eb',color:'#fff',border:0,borderRadius:6}} onClick={()=>setDevOpen(v=>!v)}>① 개발자 도구 HTML {devOpen?'닫기':'열기'}</button>
   <button style={{width:'100%',padding:10,marginTop:6}} onClick={captureCurrent}>② 현재 작성된 폼 상태 가져오기</button>
