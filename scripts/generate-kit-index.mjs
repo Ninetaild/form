@@ -1,8 +1,7 @@
 import fs from'node:fs';import path from'node:path';import{execFileSync}from'node:child_process';
-
 const root=process.cwd(),srcDir=path.join(root,'public','kits','src'),outFile=path.join(root,'public','kits','index.json');
 const toKstDate=iso=>{const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date(iso));return[p.find(x=>x.type==='year')?.value||'0000',p.find(x=>x.type==='month')?.value||'01',p.find(x=>x.type==='day')?.value||'01'].join('-')};
 const files=fs.readdirSync(srcDir,{withFileTypes:true}).filter(x=>x.isFile()&&/\.json$/i.test(x.name)).map(x=>x.name);
 const catalog=[];
 for(const file of files){const full=path.join(srcDir,file);try{const data=JSON.parse(fs.readFileSync(full,'utf8'));let uploadedAt='';try{uploadedAt=execFileSync('git',['log','-1','--format=%cI','--',path.posix.join('public/kits/src',file)],{cwd:root,encoding:'utf8'}).trim()}catch{}if(!uploadedAt)uploadedAt=fs.statSync(full).mtime.toISOString();catalog.push({file,eventName:typeof data.eventName==='string'&&data.eventName?data.eventName:file,uploadedAt,uploadedDate:toKstDate(uploadedAt)})}catch(error){console.warn('[Kit index] skip invalid JSON:',file,error.message)}}
-catalog.sort((a,b)=>b.uploadedAt.localeCompare(a.uploadedAt));fs.writeFileSync(outFile,JSON.stringify(catalog,null,2)+'\\n');console.log('[Kit index] generated',catalog.length,'entries');
+catalog.sort((a,b)=>b.uploadedAt.localeCompare(a.uploadedAt));fs.writeFileSync(outFile,JSON.stringify(catalog,null,2)+'\n');console.log('[Kit index] generated',catalog.length,'entries');
