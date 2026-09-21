@@ -3,16 +3,13 @@ on:
   push:
     branches: ["main"]
   workflow_dispatch:
-
 permissions:
   contents: read
   pages: write
   id-token: write
-
 concurrency:
   group: pages
   cancel-in-progress: true
-
 jobs:
   deploy:
     environment:
@@ -23,32 +20,24 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-
       - run: npm install
       - run: npm run build
-
-      - name: Verify and package extension
+      - name: Verify and package Kit editor
         run: |
           test -f dist-extension/manifest.json
-          test -f dist-extension/background.js
-          test -f dist-extension/content.js
           test -f dist-extension/popup.js
           test -f dist-extension/popup.html
           mkdir -p public/download
           rm -f public/download/form-routine-kit-extension.zip
           cd dist-extension
           zip -r ../public/download/form-routine-kit-extension.zip .
-
       - uses: actions/configure-pages@v5
-
       - uses: actions/upload-pages-artifact@v4
         with:
           path: ./public
-
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
