@@ -1,61 +1,8 @@
 {
-  "version": 5,
-  "title": "소비자24<초성 퀴즈 이벤트 나는 누구일까요? 시즌2>",
-  "forms": [
-    {
-      "url": "https://www.consumer.go.kr/user/survey/consumer/662/726/surveyDataForm.do",
-      "title": "루틴 1",
-      "steps": [
-        {
-          "type": "text",
-          "question": "나는 누구일까요?",
-          "answer": "리콜뉴스",
-          "selector": "#\\31 407_1",
-          "inputSelector": "#\\31 407_1",
-          "checked": true
-        },
-        {
-          "type": "choice",
-          "question": "survey_1403",
-          "answer": "동의",
-          "choiceItems": [
-            {
-              "text": "동의",
-              "value": "동의",
-              "selector": "#\\31 403_1",
-              "checked": false
-            },
-            {
-              "text": "미동의",
-              "value": "미동의",
-              "selector": "#\\31 403_2",
-              "checked": false
-            }
-          ],
-          "choices": [
-            "동의",
-            "미동의"
-          ],
-          "checked": true,
-          "manual": false
-        },
-        {
-          "type": "name",
-          "question": "이름",
-          "answer": "{{name}}",
-          "selector": "#\\31 405_1",
-          "inputSelector": "#\\31 405_1",
-          "checked": true
-        },
-        {
-          "type": "num",
-          "question": "휴대폰 번호",
-          "answer": "{{phone}}",
-          "selector": "#\\31 406_1",
-          "inputSelector": "#\\31 406_1",
-          "checked": true
-        }
-      ]
-    }
+  "version": 1,
+  "eventName": "소비자24<초성 퀴즈 이벤트 나는 누구일까요? 시즌2>",
+  "url": "https://www.consumer.go.kr/user/survey/consumer/662/726/surveyDataForm.do",
+  "answers": [
+    "리콜뉴스"
   ]
 }
