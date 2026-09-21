@@ -115,6 +115,7 @@ chrome.runtime.onMessage.addListener((m:any,s,send)=>{
   const forms=(m.forms||[]).filter((f:any)=>String(f.url||'').trim());
   const webTabId=s.tab?.id??panelTargetTabId??-1;
   if(!forms.length){send({ok:false,message:'실행할 루틴이 없습니다.'});return false}
+  badgeOn();
   void (async()=>{for(const form of forms){try{const tab=await chrome.tabs.create({url:String(form.url).trim(),active:true});if(tab.id!=null)await prepareTab(tab.id,form,webTabId)}catch(e:any){log(webTabId,'루틴 준비 실패: '+String(e?.message||e||''),'error')}}send({ok:true,message:forms.length+'개 루틴 URL을 준비했습니다.'})})();
   return true;
  }
