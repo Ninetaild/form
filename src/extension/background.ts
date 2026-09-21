@@ -23,13 +23,7 @@ async function waitTabReady(tabId:number,webTabId:number){
 }
 async function requestSiteAccess(tabId:number,pattern:string,webTabId:number){
  if(await hasPermission(pattern))return true;
- try{
-  await chrome.permissions.addHostAccessRequest({tabId,pattern});
-  log(webTabId,'이 사이트의 자동입력을 위해 사이트 접근 권한을 허용해 주세요. Chrome 주소창 오른쪽의 확장 프로그램/사이트 액세스 안내에서 허용하면 자동으로 계속됩니다.','warn');
- }catch(e:any){
-  log(webTabId,'사이트 접근 권한 요청을 표시하지 못했습니다: '+String(e?.message||e||''),'error');
-  return false;
- }
+ log(webTabId,'사이트 페이지 권한이 필요합니다. 대상 사이트에서 Form Routine Kit 확장 아이콘을 클릭한 뒤 사이트 권한을 허용해 주세요. 허용되면 자동으로 계속됩니다.','warn');
  for(let i=0;i<240;i++){
   if(await hasPermission(pattern))return true;
   try{await chrome.tabs.get(tabId)}catch{return false}
@@ -77,7 +71,18 @@ async function runRoutineInTab(tabId:number,entry:{form:any,webTabId:number}){
   if(r?.manual||r?.ok){log(entry.webTabId,r?.ok?'정해진 답변 입력이 완료되었습니다. 다음/제출/동의는 직접 확인하세요.':'사용자 확인이 필요한 항목에서 자동 입력을 중지했습니다.',r?.ok?'ok':'warn');tabRoutines.delete(tabId);refreshBadge();log(entry.webTabId,'작업을 종료했습니다.','ok');try{chrome.tabs.sendMessage(entry.webTabId,{cmd:'ui-finished'})}catch{}return r}
  }catch(e:any){log(entry.webTabId,'대상 페이지와 통신하지 못했습니다: '+String(e?.message||e||''),'warn')}return null;
 }
-chrome.action.onClicked.addListener(async()=>{await rememberTargetTab();if(panelWindowId!==null){try{const w=await chrome.windows.get(panelWindowId);if(w?.id){await chrome.windows.update(w.id,{focused:true});return}}catch{}panelWindowId=null}const w=await chrome.windows.create({url:chrome.runtime.getURL('panel.html'),type:'popup',width:440,height:780,focused:true});panelWindowId=w.id??null});
+chrome.action.onClicked.addListener(async(tab)=>{
+ if(tab?.id!=null){
+  const pattern=originPattern(String(tab.url||''));
+  if(pattern&&!await hasPermission(pattern)){
+   try{await chrome.permissions.request({origins:[pattern]})}catch{}
+  }
+ }
+ await rememberTargetTab();
+ if(panelWindowId!==null){try{const w=await chrome.windows.get(panelWindowId);if(w?.id){await chrome.windows.update(w.id,{focused:true});return}}catch{}panelWindowId=null}
+ const w=await chrome.windows.create({url:chrome.runtime.getURL('panel.html'),type:'popup',width:440,height:780,focused:true});
+ panelWindowId=w.id??null;
+});
 chrome.windows.onRemoved.addListener(id=>{if(id===panelWindowId){panelWindowId=null;panelTargetTabId=null}});
 chrome.tabs.onActivated.addListener(async info=>{if(panelWindowId===null){panelTargetTabId=info.tabId;return}try{const w=await chrome.windows.get(info.windowId);if(w.type!=='popup')panelTargetTabId=info.tabId}catch{}});
 chrome.tabs.onUpdated.addListener((tabId,changeInfo)=>{if(changeInfo.status!=='complete'||!tabRoutines.has(tabId))return;const entry=tabRoutines.get(tabId)!;void runRoutineInTab(tabId,entry).then(r=>{if(!r&&tabRoutines.has(tabId)){setTimeout(()=>{if(tabRoutines.has(tabId))void runRoutineInTab(tabId,entry)},700);setTimeout(()=>{if(tabRoutines.has(tabId))void runRoutineInTab(tabId,entry)},1800)}})});
