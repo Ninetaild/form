@@ -1,21 +1,14 @@
 {
   "$schema":"https://json-schema.org/draft/2020-12/schema",
-  "$id":"https://ninetaild.github.io/form/kits/src/schema.json",
-  "title":"Form Routine Kit",
+  "$id":"https://ninetaild.github.io/form/kits/schema.json",
+  "title":"Event Kit",
   "type":"object",
-  "required":["version","title","forms"],
+  "required":["version","eventName","url","answers"],
   "properties":{
-    "version":{"type":"integer","minimum":3},
-    "title":{"type":"string","minLength":1},
-    "forms":{"type":"array","minItems":1,"items":{"type":"object","required":["url","steps"],"properties":{
-      "url":{"type":"string","minLength":1},"title":{"type":"string"},
-      "steps":{"type":"array","items":{"type":"object","required":["type"],"properties":{
-        "type":{"enum":["text","name","num","choice","checkbox","agreement","action"]},
-        "question":{"type":"string"},"questionNumber":{"type":["integer","null"]},"selector":{"type":"string"},"inputSelector":{"type":"string"},
-        "answer":{"type":["string","array"]},"text":{"type":"string"},"nextUrl":{"type":"string"},"manual":{"type":"boolean"},"checked":{"type":"boolean"},"required":{"type":"boolean"},
-        "choices":{"type":"array","items":{"type":"string"}},"choiceItems":{"type":"array","items":{"type":"object","required":["text"],"properties":{"text":{"type":"string"},"selector":{"type":"string"},"value":{"type":"string"}}}}
-      },"additionalProperties":true}}
-    },"additionalProperties":true}}
+    "version":{"const":1},
+    "eventName":{"type":"string","minLength":1},
+    "url":{"type":"string","format":"uri"},
+    "answers":{"type":"array","minItems":1,"items":{"type":"string","minLength":1}}
   },
-  "additionalProperties":true
+  "additionalProperties":false
 }
