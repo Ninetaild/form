@@ -112,28 +112,6 @@ chrome.tabs.onUpdated.addListener((tabId,changeInfo)=>{
   }
  });
 });
-chrome.permissions.onAdded.addListener(({origins=[]}:any)=>{
- for(const [tabId,entry] of pendingTabs){
-  if(origins.some((x:string)=>x===entry.pattern)){
-   log(entry.webTabId,'사이트 접근 권한 변경을 감지했습니다. 자동 입력을 계속합니다.','ok');
-   void prepareAfterPermission(tabId,entry);
-  }
- }
-});
-async function prepareAfterPermission(tabId:number,entry:{form:any,webTabId:number,pattern:string}){
- if(!pendingTabs.has(tabId))return;
- try{
-  const tab=await chrome.tabs.get(tabId);
-  const finalPattern=originPattern(String(tab.url||''))||entry.pattern;
-  if(!(await hasPermission(finalPattern)))return;
-  await inject(tabId);
-  await new Promise(r=>setTimeout(r,250));
-  pendingTabs.delete(tabId);
-  tabRoutines.set(tabId,{form:entry.form,webTabId:entry.webTabId});refreshBadge();
-  log(entry.webTabId,'자동 입력 준비가 완료되었습니다.','ok');
-  void runRoutineInTab(tabId,{form:entry.form,webTabId:entry.webTabId});
- }catch(e:any){log(entry.webTabId,'권한 허용 후 페이지 연결에 실패했습니다: '+String(e?.message||e||''),'error')}
-}
 chrome.tabs.onRemoved.addListener(async tabId=>{
  const entry=tabRoutines.get(tabId)||pendingTabs.get(tabId);
  if(entry)log(entry.webTabId,'대상 탭이 닫혀 작업을 종료했습니다.','warn');
