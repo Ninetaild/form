@@ -47,8 +47,8 @@ export default function Popup() {
   const exportJson = () => {
     const cleanAnswers = answers.map((x) => x.trim()).filter(Boolean);
 
-    if (!eventName.trim() || !url.trim() || !cleanAnswers.length) {
-      setStatus('이벤트명, URL, 정답을 하나 이상 입력해 주세요.');
+    if (!eventName.trim() || !url.trim()) {
+      setStatus('이벤트명과 URL을 입력해 주세요.');
       return;
     }
 
